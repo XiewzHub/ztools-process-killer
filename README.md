@@ -24,7 +24,9 @@ src-ztools/
 └── dist/              提交的运行时产物（index.html、main.js、style.css、preload/）
 ```
 
-`ztools publish` 会把整个目录复制成仓库里的 `plugins/process-killer/`。CI 没有构建脚本时，直接把清单所在目录打包成安装包，因此运行时代码必须提交在 `src-ztools/dist` 下。
+`ztools publish` 会把整个目录（除了 `dist`、`node_modules` 等）复制成仓库里的 `plugins/process-killer/`。CI 从源码重新编译、按 `main` 字段所在的 `src-ztools/dist` 打包安装包。
+
+注意：发布 CLI 会跳过所有名为 `dist` 的目录，所以 `src-ztools/dist` 和本地构建出的 `dist/` 必须留在仓库里，不能写进 `.gitignore`。
 
 ## 本地开发
 

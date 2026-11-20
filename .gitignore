@@ -2,6 +2,6 @@ node_modules/
 .DS_Store
 *.log
 
-# 构建产物与打包结果（安装包走 GitHub Releases）
-dist/
+# dist/ 必须提交：ztools publish 会跳过名为 dist 的目录，插件安装目录里需要有 dist/
+# 打包结果不进仓库（安装包走 GitHub Releases）
 releases/

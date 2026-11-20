@@ -156,7 +156,7 @@ function confirmKill(proc, force) {
     const box = $('#confirm')
     $('#confirm-title').textContent = force ? '确认强制结束进程' : '确认关闭进程'
     // 两种机制的说明都写上：Windows 上是 WM_CLOSE / TerminateProcess
-    $('#confirm-body').textContent = proc.name + '  ·  PID ' + proc.pid + '\n' + proc.path +
+    $('#confirm-body').textContent = proc.name + '  ·  PID ' + proc.pid + '\n' + (proc.path || '（读取不到完整路径）') +
       (force ? '\n\n强制结束会立即终止进程，不会给进程保存的机会。' : '\n\n只发送关闭请求，进程可以拒绝；3 秒未退出可再尝试强制结束。')
     $('#confirm-ok').textContent = force ? '确认强制结束' : '确认关闭'
     box.hidden = false
@@ -202,7 +202,7 @@ async function doKill(proc, force) {
 async function doRestart(proc) {
   const box = $('#confirm')
   $('#confirm-title').textContent = '确认重启进程'
-  $('#confirm-body').textContent = proc.name + '  ·  PID ' + proc.pid + '\n' + proc.path + '\n\n将先关闭再重新启动。'
+  $('#confirm-body').textContent = proc.name + '  ·  PID ' + proc.pid + '\n' + (proc.path || '（读取不到完整路径）') + '\n\n将先关闭再重新启动。'
   $('#confirm-ok').textContent = '确认重启'
   if (!(await new Promise(resolve => {
     box.hidden = false

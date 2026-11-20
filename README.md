@@ -4,6 +4,20 @@ ZTools 插件（ID `process-killer`）：搜索进程名或端口，查看 CPU�
 
 在 ZTools 里输入 `kill`、`关闭进程`、`进程管理`、`进程管家`、`netstat`、`端口占用` 即可打开。
 
+## 界面
+
+进程列表，按内存排序，占用端口高亮：
+
+![进程列表](docs/screenshots/01-list.png)
+
+按端口搜索：
+
+![按端口搜索](docs/screenshots/02-search.png)
+
+关闭前必须确认：
+
+![确认关闭进程](docs/screenshots/03-confirm.png)
+
 ## 功能
 
 - 列出进程及其 CPU、内存、监听端口，按内存 / CPU / 名称 / 端口排序

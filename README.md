@@ -11,7 +11,7 @@
 
 ## 安装
 
-ZTools 开发者工具添加 `src-ztools/plugin.json`；或安装 `releases/process-killer-0.1.0.zip`。
+ZTools 开发者工具添加 `src-ztools/plugin.json`；或从 [Releases](https://github.com/XiewzHub/ztools-process-killer/releases) 下载 zip 安装包。
 
 ## 开发
 

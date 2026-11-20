@@ -1,0 +1,12 @@
+{
+  "name": "ztools-process-killer",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "ZTools 插件：搜索进程名或端口，关闭/重启/查看进程",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "package": "node scripts/build.mjs --zip",
+    "test": "node --test test/"
+  }
+}

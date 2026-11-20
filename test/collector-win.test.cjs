@@ -1,6 +1,6 @@
 const test = require('node:test')
 const assert = require('node:assert')
-const win = require('../src-ztools/dist/preload/collector-win')
+const win = require('../src-ztools/pkg/preload/collector-win')
 
 test('parseCim 单个和数组都能解，中文命令行原样保留', () => {
   const one = win.parseCim('{"pid":4,"ppid":0,"name":"System","cmd":null,"rss":128,"cpu":0,"start":"2026-11-20T10:00:00.0000000+08:00"}')
@@ -52,7 +52,7 @@ test('parseNetstat 区分监听、连接和 UDP', () => {
 })
 
 test('exeFromCommandLine 取出命令行开头的 exe', () => {
-  const { exeFromCommandLine } = require('../src-ztools/dist/preload/actions')
+  const { exeFromCommandLine } = require('../src-ztools/pkg/preload/actions')
   assert.equal(exeFromCommandLine('"C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe" --type=renderer'), 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe')
   // 没有引号：参数里也可能有 .exe，宁可不认
   assert.equal(exeFromCommandLine('C:\\Windows\\ping.exe -n 60 127.0.0.1'), null)

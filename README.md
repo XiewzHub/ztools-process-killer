@@ -19,27 +19,31 @@ ZTools 插件（ID `process-killer`）：搜索进程名或端口，查看 CPU�
 
 ```text
 src-ztools/
-├── plugin.json        清单（name / title / version / main / preload / platform …）
-├── logo.png           图标
-└── dist/              提交的运行时产物（index.html、main.js、style.css、preload/）
+├── build-plugin.sh    官方 CI 的构建钩子：跑 npm run build
+└── pkg/               插件运行目录（提交在仓库里）
+    ├── plugin.json    清单（name / title / version / main / preload / platform …）
+    ├── logo.png       图标
+    ├── index.html     界面入口
+    ├── main.js / style.css
+    └── preload/       Node 侧采集与操作
 ```
 
-`ztools publish` 会把整个目录（除了 `dist`、`node_modules` 等）复制成仓库里的 `plugins/process-killer/`。CI 从源码重新编译、按 `main` 字段所在的 `src-ztools/dist` 打包安装包。
+`ztools publish` 会把整个目录复制成仓库里的 `plugins/process-killer/`。发布 CLI 会跳过所有名为 `dist` 的目录，所以运行时代码放在 `pkg/` 而不是 `dist/`；本地构建输出的 `dist/` 是安装包内容，不提交（已在 `.gitignore` 里）。
 
-注意：发布 CLI 会跳过所有名为 `dist` 的目录，所以 `src-ztools/dist` 和本地构建出的 `dist/` 必须留在仓库里，不能写进 `.gitignore`。
+CI 从源码重新打包时，打包目录由 `main` 字段所在目录决定（`pkg/` 里有 `plugin.json`），所以安装包内容与本地 `npm run build` 一致。
 
 ## 本地开发
 
 Node.js >= 20（本机用 nvm 的 v20.19.5）。
 
 ```sh
-npm run build     # 把 src-ztools 整理成 dist/（安装包内容），并核对清单声明的文件
+npm run build     # 把 src-ztools/pkg 整理成 dist/（安装包内容），并核对清单声明的文件
 npm run package   # 另外输出 releases/process-killer-<版本>.zip
 npm test          # 单元测试
 npm run test:ui   # Chrome 里跑一遍界面，需要 playwright 与本机 Chrome
 ```
 
-ZTools 开发者工具里的开发模式添加 `src-ztools/plugin.json` 即可加载本工程。
+ZTools 开发者工具里的开发模式添加 `src-ztools/pkg/plugin.json` 即可加载本工程。
 
 ## 发布
 

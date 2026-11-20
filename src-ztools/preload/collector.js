@@ -71,7 +71,19 @@ function appBundleOf(path) {
   return m ? m[1] : null
 }
 
+// Windows：列表里已有 PPID、命令行、内存和 CPU，合并端口后补上内存占比
+function snapshotWindows() {
+  return require('./collector-win').snapshot().then(({ processes, ports }) => {
+    const memTotal = require('node:os').totalmem() / 1048576
+    return {
+      processes: merge(processes, ports || new Map()).map(p => ({ ...p, mem: memTotal ? p.rss / memTotal * 100 : 0 })),
+      portWarning: ports ? null : '端口信息不可用：netstat 执行失败'
+    }
+  })
+}
+
 async function snapshot() {
+  if (process.platform === 'win32') return snapshotWindows()
   const [ps, lsof] = await Promise.all([
     exec('/bin/ps', PS_ARGS),
     exec('/usr/sbin/lsof', ['-nP', '-iTCP', '-F', 'pcn'])
@@ -81,4 +93,4 @@ async function snapshot() {
   return { processes, portWarning: lsof.ok ? null : '端口信息受限：可能缺少显示其他用户进程的权限' }
 }
 
-module.exports = { exec, parsePs, parseLsof, merge, appBundleOf, snapshot, PS_ARGS, PS_LINE }
+module.exports = { exec, parsePs, parseLsof, merge, appBundleOf, snapshot, snapshotWindows, PS_ARGS, PS_LINE }

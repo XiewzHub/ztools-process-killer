@@ -65,4 +65,10 @@ test('snapshot 在真实环境返回进程', async () => {
   assert.ok(Array.isArray(data.processes))
   assert.ok(data.processes.length > 10)
   assert.ok(data.processes.every(p => Number.isInteger(p.pid)))
+  if (process.platform === 'win32') {
+    // 单看进程号是不是一个进程，才能说明别人真关了我们已经算过的进程
+    const self = data.processes.find(p => p.pid === process.pid)
+    assert.ok(self && self.path.includes('node'), '应能从命令行认出本进程')
+    assert.ok(data.processes.filter(p => p.listen.length > 0).length >= 1, '至少应有一个监听端口的进程')
+  }
 })

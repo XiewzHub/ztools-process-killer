@@ -2,7 +2,8 @@
 const path = require('path')
 const http = require('http')
 const fs = require('fs')
-const { chromium } = require('/Users/wenzhuangxie/self/my_project/ztools-env-variable-assistant/node_modules/playwright')
+// Windows 上换成本机 Chrome，路径也可用 CHROME_PATH / PLAYWRIGHT_PATH 覆盖
+const { chromium } = require(process.env.PLAYWRIGHT_PATH || require.resolve('playwright'))
 
 const dist = path.join(__dirname, '..', 'dist')
 const TYPES = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.png': 'image/png' }
@@ -19,7 +20,10 @@ const server = http.createServer((req, res) => {
 ;(async () => {
   await new Promise(r => server.listen(0, '127.0.0.1', r))
   const port = server.address().port
-  const browser = await chromium.launch({ executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' })
+  const chromePath = process.env.CHROME_PATH || (process.platform === 'win32'
+    ? 'C:/Program Files/Google/Chrome/Application/chrome.exe'
+    : '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome')
+  const browser = await chromium.launch({ executablePath: chromePath })
   const page = await browser.newPage({ viewport: { width: 900, height: 560 } })
   const errors = []
   page.on('pageerror', e => errors.push(e.message))

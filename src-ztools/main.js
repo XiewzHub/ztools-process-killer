@@ -143,10 +143,10 @@ const REASON = {
   permission: '权限不足，无法关闭该进程',
   gone: '进程已退出',
   self: '不能关闭插件自身',
-  still_alive: '进程未响应 SIGTERM，可再试强制结束',
+  still_alive: '进程未响应关闭请求，可再试强制结束',
   invalid_pid: '无效的进程号',
   failed: '操作失败',
-  not_an_app: '该进程不是 .app，不支持重启',
+  not_an_app: '该进程不是 .app / .exe，不支持重启',
   spawn_failed: '启动失败'
 }
 
@@ -155,8 +155,9 @@ function confirmKill(proc, force) {
   return new Promise(resolve => {
     const box = $('#confirm')
     $('#confirm-title').textContent = force ? '确认强制结束进程' : '确认关闭进程'
+    // 两种机制的说明都写上：Windows 上是 WM_CLOSE / TerminateProcess
     $('#confirm-body').textContent = proc.name + '  ·  PID ' + proc.pid + '\n' + proc.path +
-      (force ? '\n\n强制结束使用 SIGKILL，不会给进程保存机会。' : '\n\n将发送 SIGTERM，3 秒未退出可再尝试强制结束。')
+      (force ? '\n\n强制结束会立即终止进程，不会给进程保存的机会。' : '\n\n只发送关闭请求，进程可以拒绝；3 秒未退出可再尝试强制结束。')
     $('#confirm-ok').textContent = force ? '确认强制结束' : '确认关闭'
     box.hidden = false
 
@@ -188,7 +189,9 @@ async function doKill(proc, force) {
   if (rowEl) rowEl.classList.add('removing')
   const result = force ? await svc.forceKill(proc.pid) : await svc.kill(proc.pid)
   if (result && result.ok) {
-    toast('已关闭 ' + proc.name + '（' + (result.signal || 'SIGKILL') + '）')
+    // WM_CLOSE 是请对方自己退，对方可能选择不退，提示里说清楚
+    const how = result.signal === 'WM_CLOSE' ? '已请求关闭' : '已关闭'
+    toast(how + ' ' + proc.name + '（' + (result.signal || 'SIGKILL') + '）')
     await refresh()
   } else {
     if (rowEl) rowEl.classList.remove('removing')
@@ -244,10 +247,11 @@ async function showDetail(proc) {
     '用户: ' + proc.user,
     '父进程: ' + proc.ppid,
     '内存: ' + fmtMem(proc.rss) + '（' + proc.mem.toFixed(1) + '%）',
-    'CPU: ' + (proc.cpu ? proc.cpu.toFixed(1) + '%（累计值）' : '-'),
+    // Windows 的 CPU 是采样差值，别标“累计值”
+    'CPU: ' + (proc.cpu ? proc.cpu.toFixed(1) + '%' + (svc.platform === 'win32' ? '' : '（累计值）') : '-'),
     '监听端口: ' + (proc.listen.join(', ') || '无'),
     '已建立连接端口: ' + (proc.conn.join(', ') || '无'),
-    '应用包: ' + (proc.app || '非 .app')
+    '应用包: ' + (proc.app || (svc.platform === 'win32' ? '无（按启动命令重启）' : '非 .app'))
   ]
   $('#dialog-body').textContent = lines.join('\n')
   $('#dialog').hidden = false
@@ -267,7 +271,7 @@ function reveal(proc) {
 function openMenu(x, y, proc) {
   menuEl.innerHTML = [
     '<button data-act="kill" class="danger">关闭进程</button>',
-    '<button data-act="force" class="danger">强制结束（SIGKILL）</button>',
+    '<button data-act="force" class="danger">强制结束</button>',
     '<button data-act="restart">重启进程</button>',
     '<div class="sep"></div>',
     '<button data-act="detail">查看详情</button>',
@@ -357,7 +361,7 @@ function applyAutoRefresh(on) {
   state.autoRefresh = on
   const btn = $('#refresh')
   btn.classList.toggle('auto', on)
-  btn.title = on ? '自动刷新中，点击改为手动（⌘R 随时刷新）' : '手动刷新，点击开启自动刷新（⌘R 随时刷新）'
+  btn.title = on ? '自动刷新中，点击改为手动（Ctrl/⌘+R 随时刷新）' : '手动刷新，点击开启自动刷新（Ctrl/⌘+R 随时刷新）'
   clearInterval(autoTimer)
   autoTimer = on ? setInterval(refresh, AUTO_MS) : null
 }
@@ -399,6 +403,9 @@ if (ztools && typeof ztools.onPluginEnter === 'function') {
     refresh()
   })
 }
+
+// Windows 键位：Ctrl+Enter 重启、Ctrl+R 刷新、Ctrl+C 复制；提示栏跟着换
+if (svc.platform === 'win32') $('.hint').textContent = '↑↓ 选择 · ⏎ 关闭 · Ctrl+⏎ 重启 · Shift+⏎ 详情 · Ctrl+C 复制路径'
 
 applyAutoRefresh(state.autoRefresh)
 refresh()

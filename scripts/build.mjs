@@ -29,6 +29,11 @@ if (process.argv.includes('--zip')) {
   const zip = path.join(root, 'releases', `process-killer-${manifest.version}.zip`)
   await mkdir(path.dirname(zip), { recursive: true })
   await rm(zip, { force: true })
-  execFileSync('/usr/bin/ditto', ['-c', '-k', '--norsrc', dist, zip])
+  // Windows 自带 tar（bsdtar）也能打 zip，Mac 上用 ditto 保留架构信息
+  if (process.platform === 'win32') {
+    execFileSync('tar.exe', ['-a', '-c', '-f', zip, '-C', dist, '.'])
+  } else {
+    execFileSync('/usr/bin/ditto', ['-c', '-k', '--norsrc', dist, zip])
+  }
   console.log('zip ->', path.relative(root, zip))
 }

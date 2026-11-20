@@ -1,3 +1,7 @@
 node_modules/
 .DS_Store
 *.log
+
+# 构建产物与打包结果（安装包走 GitHub Releases）
+dist/
+releases/

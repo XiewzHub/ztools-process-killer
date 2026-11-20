@@ -8,15 +8,15 @@ ZTools 插件（ID `process-killer`）：搜索进程名或端口，查看 CPU�
 
 进程列表，按内存排序，占用端口高亮：
 
-![进程列表](docs/screenshots/01-list.png)
+![进程列表](https://img.naixiai.cn/2026/11/21/01-list.png)
 
 按端口搜索：
 
-![按端口搜索](docs/screenshots/02-search.png)
+![按端口搜索](https://img.naixiai.cn/2026/11/21/02-search.png)
 
 关闭前必须确认：
 
-![确认关闭进程](docs/screenshots/03-confirm.png)
+![确认关闭进程](https://img.naixiai.cn/2026/11/21/03-confirm.png)
 
 ## 功能
 

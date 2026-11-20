@@ -1,45 +1,55 @@
-# ZTools 关闭进程
+# 进程管家（process-killer）
 
-从 uTools 插件「关闭进程」的能力清单独立实现，支持 macOS 与 Windows。
+ZTools 插件（ID `process-killer`）：搜索进程名或端口，查看 CPU、内存与端口占用，关闭、强制结束或重启进程。支持 macOS 与 Windows。
+
+在 ZTools 里输入 `kill`、`关闭进程`、`进程管理`、`进程管家`、`netstat`、`端口占用` 即可打开。
 
 ## 功能
 
 - 列出进程及其 CPU、内存、监听端口，按内存 / CPU / 名称 / 端口排序
 - 搜索进程名、路径、PID 或端口号
-- 关闭、强制结束、重启应用、复制路径、文件夹中显示、查看完整启动命令
+- 关闭（先温和退出，3 秒未退提示可强制结束）、强制结束、重启 .app / .exe、复制路径、文件夹中显示、查看完整启动命令
+- 关闭前弹确认框，确认后才真正结束进程
+- 自动 / 手动刷新开关
 - 主搜索框直接推结果：输入 `kill chrome` 或 `netstat 8080` 即列出，回车关闭
 
-## 安装
+## 目录结构
 
-ZTools 开发者工具添加 `src-ztools/plugin.json`；或从 [Releases](https://github.com/XiewzHub/ztools-process-killer/releases) 下载 zip 安装包。
+本仓库按 [ZToolsCenter/ZTools-plugins](https://github.com/ZToolsCenter/ZTools-plugins) 的目录约定组织，插件 ID 为 `process-killer`：
 
-## 开发
+```text
+src-ztools/
+├── plugin.json        清单（name / title / version / main / preload / platform …）
+├── logo.png           图标
+└── dist/              提交的运行时产物（index.html、main.js、style.css、preload/）
+```
+
+`ztools publish` 会把整个目录复制成仓库里的 `plugins/process-killer/`。CI 没有构建脚本时，直接把清单所在目录打包成安装包，因此运行时代码必须提交在 `src-ztools/dist` 下。
+
+## 本地开发
 
 Node.js >= 20（本机用 nvm 的 v20.19.5）。
 
 ```sh
-npm run build     # src-ztools -> dist
-npm run package   # 另外输出 releases/*.zip（Windows 用自带 tar，macOS 用 ditto）
+npm run build     # 把 src-ztools 整理成 dist/（安装包内容），并核对清单声明的文件
+npm run package   # 另外输出 releases/process-killer-<版本>.zip
 npm test          # 单元测试
-npm run test:ui   # 在真实 Chrome 里跑界面（需已 build，且能找到 playwright）
+npm run test:ui   # Chrome 里跑一遍界面，需要 playwright 与本机 Chrome
 ```
 
-界面测试用 `PLAYWRIGHT_PATH` 指定 playwright 安装位置，`CHROME_PATH` 指定 Chrome；不设时走 `require.resolve('playwright')` 和系统默认路径。
+ZTools 开发者工具里的开发模式添加 `src-ztools/plugin.json` 即可加载本工程。
 
-## 各平台差异
+## 发布
 
-| | macOS | Windows |
-| --- | --- | --- |
-| 关闭 | SIGTERM，3 秒未退提示可强制 | `taskkill`（发 WM_CLOSE），拒绝时提示可强制 |
-| 强制结束 | SIGKILL | `taskkill /F`（TerminateProcess） |
-| 进程信息 | `ps` + `lsof` | PowerShell/CIM + `netstat -ano` |
-| CPU | `ps` 的累计百分比 | 两次采样差值的瞬时百分比 |
-| 重启 | `open -n xxx.app` | 直接启动命令行里的 `.exe` |
+```sh
+ztools publish
+```
+
+本机已安装 `@ztools-center/plugin-cli`（`~/.nvm/versions/node/v14.21.3/bin/ztools`），token 存在 `~/.config/ztools/cli-config.json`。发布前需要：`plugin.json` 的 version 已升、`CHANGELOG.md` 有对应 `## 版本 - 日期` 段落、工作区干净。
 
 ## 注意
 
-- macOS 的 CPU 取自 `ps` 的累计百分比，不是瞬时值，与活动监视器口径不同。
-- `lsof` 看不到无权限用户进程的端口，界面会提示。
-- 只能重启 `.app` / `.exe`；命令行程序直接启动会丢环境变量，故明确报错。
+- CPU 取自 `ps` / CIM 的累计百分比，不是瞬时值，与活动监视器口径不同。
+- `lsof`（macOS）/ `netstat`（Windows）看不到无权限用户进程的端口，界面会提示。
+- 只能重启应用包（.app / .exe）；命令行程序直接启动会丢环境变量，故明确报错。
 - 关闭系统进程需要更高权限，插件不做提权。
-- Windows 上没有窗口的进程收不到 WM_CLOSE，`taskkill` 会报“只能强制结束”，插件据此提示改用强制结束。

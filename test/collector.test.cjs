@@ -1,6 +1,6 @@
 const test = require('node:test')
 const assert = require('node:assert')
-const collector = require('../src-ztools/preload/collector')
+const collector = require('../src-ztools/dist/preload/collector')
 
 test('parsePs 解析 ps 输出', () => {
   const out = [
